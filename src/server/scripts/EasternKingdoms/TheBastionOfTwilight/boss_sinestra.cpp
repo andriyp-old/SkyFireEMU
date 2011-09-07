@@ -18,29 +18,24 @@
 #include "ScriptPCH.h"
 #include "the_bastion_of_twilight.h"
 
-// this should be removed when speech is done
-#define SAY_AGGRO "We were fools to entrust an imbecile like Cho'gall with such a sacred duty. I will deal with you intruders myself!"
-#define SAY_SUMMONING_ADDS_1 "Feed, children! Take your fill from their meaty husks!"
-#define SAY_SUMMONING_ADDS_2 "Come forth children of Twilight!"
-#define SAY_SUMMONING_ADDS_3 "YOUR MOTHER CALLS!"
-#define SAY_SPECIAL_1 "The energy infuse within my clutch is mine to reclaim!"
-#define SAY_SPECIAL_2 "SUFFER!"
-#define SAY_SPECIAL_3 "FEEL MY HATRED!"
-#define SAY_PHASE_2 "I tire of this! Do you see this clutch amidst which you stand? I have nurtured the spark within them, but that lifeforce is, and always will be, MINE! Behold... power beyond your comprehension!"
-#define SAY_PHASE_2_CALEN "Heroes! You are not alone in this dark place!"
-#define SAY_CBS_CALEN "Sintharia! Your master owes me a great debt... one that I intend to extract from his consort's hide!"
-#define SAY_CBS "This will be your tomb as well as theirs!"
-#define SAY_RECHARGING_CALEN "Flame of life, burn within me and renew my vigor!"
-#define SAY_WINNING_CALEN "You are weakening, Sintharia! Accept the inevitable."
-#define SAY_WINNING "You mistake this for weakness? FOOL!"
-#define SAY_LOSING_CALEN "Heroes, power wanes..."
-#define SAY_LOSING "My brood will feast upon your essence!"
-#define SAY_PHASE_3 "Enough! Drawing upon this source will set us back months... you should feel honored to be worthy of this expenditure! NOW DIE!"
-#define SAY_PHASE_3_CALEN "The fires dim, champions... Take this, the last of my power. Succeed where I have failed... Avenge me. Avenge the world..."
-#define SAY_CALEN_DIES "All is lost...Forgive me, my queen..."
-#define SAY_KILL_1 "My brood will feed on your bones!"
-#define SAY_KILL_2 "Powerless..."
-#define SAY_DIE "Deathwing... I have fallen... the brood... is lost..."
+enum Texts
+{
+    SAY_AGGRO     = 0,
+    SAY_DEATH     = 1,
+    SAY_KILL_1    = 2,
+    SAY_KILL_2    = 3,
+    SAY_LOSING    = 4,
+    SAY_PHASE_1   = 5,
+    SAY_PHASE_2   = 6,
+    SAY_PHASE_3   = 7,
+    SAY_SPECIAL_1 = 8,
+    SAY_SPECIAL_2 = 9,
+    SAY_SPECIAL_3 = 10,
+    SAY_SPECIAL_4 = 11,
+    SAY_SPECIAL_5 = 12,
+    SAY_SPECIAL_6 = 13,
+    SAY_WINNING   = 14
+};
 
 enum Spells
 {
@@ -100,7 +95,7 @@ class boss_sinestra : public CreatureScript
             void EnterCombat(Unit* /*Ent*/)
             {                
                 _EnterCombat();
-                me->MonsterYell(SAY_AGGRO, 0, 0);
+                Talk(SAY_AGGRO);
                 DoCast(SPELL_CALL_FLAMES);
                 events.ScheduleEvent(EVENT_TWILIGHT_BLAST, 2000);
                 events.ScheduleEvent(EVENT_WRACK,          10000);
@@ -111,16 +106,13 @@ class boss_sinestra : public CreatureScript
             void JustDied(Unit* /*Kill*/)
             {
                 _JustDied();
-                me->MonsterYell(SAY_DIE, 0, 0);
+                Talk(SAY_DEATH);
             }
 
             void KilledUnit(Unit* victim)
             {
-                if (victim->GetTypeId() == TYPEID_PLAYER)
-                {
-                    me->MonsterYell(SAY_KILL_1, 0, 0);
-                    me->MonsterYell(SAY_KILL_2, 0, 0);
-                }
+                if (victim->GetTypeId() == TYPEID_PLAYER)                
+                    Talk(RAND(SAY_KILL_1, SAY_KILL_2));                
             }
 
             void UpdateAI(const uint32 diff)
@@ -144,7 +136,7 @@ class boss_sinestra : public CreatureScript
                 {
                     phase = 2;
                     DoSummon(CREATURE_CALEN, POSITION_CALEN);
-                    me->MonsterYell(SAY_PHASE_2, 0, 0);                    
+                    Talk(SAY_PHASE_2);
                     me->SetFullHealth();
                     DoCast(SPELL_MANA_BARRIER);
                 }
@@ -287,7 +279,7 @@ class creature_calen : public CreatureScript
 
             void IsSummonedBy(Unit* /*summoner*/)
             {
-                me->MonsterYell(SAY_PHASE_2_CALEN, 0, 0);
+                //me->MonsterYell(SAY_PHASE_2_CALEN, 0, 0);
             }
         };
 

@@ -209,6 +209,9 @@ set(scripts_STAT_SRCS
   EasternKingdoms/GrimBatol/instance_grim_batol.cpp
   EasternKingdoms/ThroneOfTheTides/throne_of_the_tides.h
   EasternKingdoms/ThroneOfTheTides/instance_throne_of_the_tides.cpp
+  EasternKingdoms/TheBastionOfTwilight/the_bastion_of_twilight.h
+  EasternKingdoms/TheBastionOfTwilight/instance_the_bastion_of_twilight.cpp
+  EasternKingdoms/TheBastionOfTwilight/boss_sinestra.cpp
 )
 
 message("  -> Prepared: Eastern Kingdoms")

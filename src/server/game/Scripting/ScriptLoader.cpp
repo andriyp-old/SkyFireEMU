@@ -237,6 +237,8 @@ void AddSC_boss_hazzarah();
 void AddSC_boss_renataki();
 void AddSC_boss_wushoolay();
 void AddSC_instance_zulgurub();
+void AddSC_instance_the_bastion_of_twilight();
+void AddSC_boss_sinestra();
 
 //void AddSC_alterac_mountains();
 void AddSC_arathi_highlands();
@@ -861,6 +863,8 @@ void AddEasternKingdomsScripts()
     AddSC_boss_renataki();
     AddSC_boss_wushoolay();
     AddSC_instance_zulgurub();
+    AddSC_instance_the_bastion_of_twilight();
+    AddSC_boss_sinestra();
 
     //AddSC_alterac_mountains();
     AddSC_arathi_highlands();
@@ -888,7 +892,7 @@ void AddEasternKingdomsScripts()
     AddSC_undercity();
     AddSC_western_plaguelands();
     AddSC_westfall();
-    AddSC_wetlands();
+    AddSC_wetlands();    
 #endif
 }
 

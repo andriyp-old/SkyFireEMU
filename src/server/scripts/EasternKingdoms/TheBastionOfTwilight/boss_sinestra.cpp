@@ -18,38 +18,54 @@
 #include "ScriptPCH.h"
 #include "the_bastion_of_twilight.h"
 
-enum Texts
+enum SinestraTexts
 {
-    SAY_AGGRO     = 0,
-    SAY_DEATH     = 1,
-    SAY_KILL_1    = 2,
-    SAY_KILL_2    = 3,
-    SAY_LOSING    = 4,
-    SAY_PHASE_1   = 5,
-    SAY_PHASE_2   = 6,
-    SAY_PHASE_3   = 7,
-    SAY_SPECIAL_1 = 8,
-    SAY_SPECIAL_2 = 9,
-    SAY_SPECIAL_3 = 10,
-    SAY_SPECIAL_4 = 11,
-    SAY_SPECIAL_5 = 12,
-    SAY_SPECIAL_6 = 13,
-    SAY_WINNING   = 14
+    SAY_SINESTRA_AGGRO     = 0,
+    SAY_SINESTRA_DEATH     = 1,
+    SAY_SINESTRA_KILL_1    = 2,
+    SAY_SINESTRA_KILL_2    = 3,
+    SAY_SINESTRA_LOSING    = 4,
+    SAY_SINESTRA_PHASE_1   = 5,
+    SAY_SINESTRA_PHASE_2   = 6,
+    SAY_SINESTRA_PHASE_3   = 7,
+    SAY_SINESTRA_SPECIAL_1 = 8,
+    SAY_SINESTRA_SPECIAL_2 = 9,
+    SAY_SINESTRA_SPECIAL_3 = 10,
+    SAY_SINESTRA_SPECIAL_4 = 11,
+    SAY_SINESTRA_SPECIAL_5 = 12,
+    SAY_SINESTRA_SPECIAL_6 = 13,
+    SAY_SINESTRA_WINNING   = 14
+};
+
+enum CalenTexts
+{
+    SAY_CALEN_INTRO    = 0,
+    SAY_CALEN_LOSING   = 1,
+    SAY_CALEN_PHASE_2  = 3,
+    SAY_CALEN_PHASE_3  = 4,
+    SAY_CALEN_RECHARGE = 5,
+    SAY_CALEN_WINNING  = 6,
+    SAY_CALEN_DEATH    = 7
 };
 
 enum Spells
 {
-    SPELL_DRAINED           = 89350,
-    SPELL_CALL_FLAMES       = 95855,
-    SPELL_WRACK             = 89421, // alt: 89435, 92955, 92956
-    SPELL_FLAME_BREATH      = 18435, // alt: 92944
-    SPELL_TWILIGHT_SLICER   = 92852, // alt: 92954
-    SPELL_TWILIGHT_BLAST    = 89280,
-    SPELL_TWILIGHT_SPIT     = 89299, // alt: 92953
-    SPELL_TWILIGHT_ESSENCE  = 88146,
-    SPELL_SHADOW_PULSE      = 78649,
-    SPELL_MANA_BARRIER      = 87299,
-    SPELL_TWILIGHT_CARAPACE = 87654
+    // Sinestra :
+    SPELL_DRAINED             = 89350,
+    SPELL_CALL_FLAMES         = 95855,
+    SPELL_WRACK               = 89421, // alt: 89435, 92955, 92956
+    SPELL_FLAME_BREATH        = 18435, // alt: 92944    
+    SPELL_TWILIGHT_BLAST      = 89280,
+    SPELL_TWILIGHT_SPIT       = 89299, // alt: 92953
+    SPELL_TWILIGHT_ESSENCE    = 88146,
+    SPELL_SHADOW_PULSE        = 78649,
+    SPELL_MANA_BARRIER        = 87299,
+    SPELL_TWILIGHT_CARAPACE   = 87654,
+    SPELL_TWILIGHT_EXTINCTION = 87945,
+    // Shadow Orb :
+    SPELL_TWILIGHT_SLICER     = 92851,
+    // Calen :
+    SPELL_FIERY_BARRIER       = 87231
 };
 
 enum Events
@@ -58,7 +74,58 @@ enum Events
     EVENT_FLAME_BREATH,
     EVENT_TWILIGHT_BLAST,
     EVENT_TWILIGHT_ORBS,
-    EVENT_TWILIGHT_SLICER
+    EVENT_TWILIGHT_SLICER,
+    EVENT_TWILIGHT_EXTINCTION
+};
+
+class creature_shadow_orb : public CreatureScript
+{
+    public:
+        creature_shadow_orb() : CreatureScript("creature_shadow_orb") { }
+
+        typedef struct creature_shadow_orbAI : public ScriptedAI
+        {
+            Creature *mateOrb;
+
+            creature_shadow_orbAI(Creature* creature)
+                : ScriptedAI(creature)
+                , mateOrb(NULL)
+            {}
+
+            inline void SetMate (Creature* mate)
+            {
+                mateOrb = mate;
+            }
+
+            void IsSummonedBy(Unit*)
+            {
+                events.ScheduleEvent(EVENT_TWILIGHT_SLICER, 5000);
+            }
+            
+            void UpdateAI(const uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                events.Update(diff);
+
+                switch (events.ExecuteEvent())
+                {
+                case EVENT_TWILIGHT_SLICER:
+                    if (mateOrb)
+                        DoCast(mateOrb, SPELL_TWILIGHT_SLICER);
+                    break;
+                }                
+            }
+
+        private:
+            EventMap events;
+        } AI;
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new creature_shadow_orbAI(creature);
+        }
 };
 
 class boss_sinestra : public CreatureScript
@@ -95,7 +162,7 @@ class boss_sinestra : public CreatureScript
             void EnterCombat(Unit* /*Ent*/)
             {                
                 _EnterCombat();
-                Talk(SAY_AGGRO);
+                Talk(SAY_SINESTRA_AGGRO);
                 DoCast(SPELL_CALL_FLAMES);
                 events.ScheduleEvent(EVENT_TWILIGHT_BLAST, 2000);
                 events.ScheduleEvent(EVENT_WRACK,          10000);
@@ -106,13 +173,13 @@ class boss_sinestra : public CreatureScript
             void JustDied(Unit* /*Kill*/)
             {
                 _JustDied();
-                Talk(SAY_DEATH);
+                Talk(SAY_SINESTRA_DEATH);
             }
 
             void KilledUnit(Unit* victim)
             {
                 if (victim->GetTypeId() == TYPEID_PLAYER)                
-                    Talk(RAND(SAY_KILL_1, SAY_KILL_2));                
+                    Talk(RAND(SAY_SINESTRA_KILL_1, SAY_SINESTRA_KILL_2));                
             }
 
             void UpdateAI(const uint32 diff)
@@ -134,11 +201,11 @@ class boss_sinestra : public CreatureScript
             {
                 if (phase == 1 && me->HealthBelowPct(30))
                 {
-                    phase = 2;
-                    DoSummon(CREATURE_CALEN, POSITION_CALEN);
-                    Talk(SAY_PHASE_2);
+                    phase = 2;                    
+                    Talk(SAY_SINESTRA_PHASE_2);
                     me->SetFullHealth();
-                    DoCast(SPELL_MANA_BARRIER);
+                    DoCast(SPELL_MANA_BARRIER);                    
+                    events.ScheduleEvent(EVENT_TWILIGHT_EXTINCTION, 2000);
                 }
                 else if (phase == 2 && eggA->isDead() && eggB->isDead())
                 {
@@ -165,7 +232,12 @@ class boss_sinestra : public CreatureScript
                     case EVENT_TWILIGHT_BLAST:
                         if (!me->getVictim()->IsWithinMeleeRange(me))
                             DoCastVictim(SPELL_TWILIGHT_BLAST);
-                        events.RescheduleEvent(EVENT_TWILIGHT_BLAST, 6000);
+                        events.RescheduleEvent(EVENT_TWILIGHT_BLAST, 5000);
+                        break;
+
+                    case EVENT_TWILIGHT_EXTINCTION:                        
+                        DoSummon(CREATURE_CALEN, POSITION_CALEN);
+                        DoCast(SPELL_TWILIGHT_EXTINCTION);
                         break;
 
                     case EVENT_TWILIGHT_ORBS:
@@ -182,8 +254,9 @@ class boss_sinestra : public CreatureScript
                             Position positionA, positionB;
                             targetA->GetPosition(&positionA);
                             targetB->GetPosition(&positionB);
-                            DoSummon(CREATURE_SHADOW_ORB, positionA, 15000, TEMPSUMMON_TIMED_DESPAWN);
-                            DoSummon(CREATURE_SHADOW_ORB, positionB, 15000, TEMPSUMMON_TIMED_DESPAWN);
+                            Creature *orbA = DoSummon(CREATURE_SHADOW_ORB, positionA, 15000, TEMPSUMMON_TIMED_DESPAWN),
+                                     *orbB = DoSummon(CREATURE_SHADOW_ORB, positionB, 15000, TEMPSUMMON_TIMED_DESPAWN);
+                            ((creature_shadow_orb::AI*)orbB->GetAI())->SetMate(orbA);
                         }
 
                         events.RescheduleEvent(EVENT_TWILIGHT_ORBS, 30000);
@@ -222,50 +295,6 @@ class creature_pulsing_twilight_egg : public CreatureScript
         }
 };
 
-class creature_twilight_orb : public CreatureScript
-{
-    public:
-        creature_twilight_orb() : CreatureScript("creature_twilight_orb") { }
-
-        struct creature_twilight_orbAI : public ScriptedAI
-        {
-            creature_twilight_orbAI(Creature* creature)
-                : ScriptedAI(creature)
-            {}
-
-            void IsSummonedBy(Unit* /*summoner*/)
-            {
-                events.ScheduleEvent(EVENT_TWILIGHT_SLICER, 10000);
-            }
-            
-            void UpdateAI(const uint32 diff)
-            {
-                if (!UpdateVictim())
-                    return;
-
-                events.Update(diff);
-
-                while (uint32 eventId = events.ExecuteEvent())
-                {
-                    switch (eventId)
-                    {
-                    case EVENT_TWILIGHT_SLICER:
-                        // TODO
-                        break;
-                    }
-                }
-            }
-
-        private:
-            EventMap events;
-        };
-
-        CreatureAI* GetAI(Creature* creature) const
-        {
-            return new creature_twilight_orbAI(creature);
-        }
-};
-
 class creature_calen : public CreatureScript
 {
     public:
@@ -277,9 +306,16 @@ class creature_calen : public CreatureScript
                 : ScriptedAI(creature)
             {}
 
+            void EnterCombat(Unit*)
+            {                
+                Talk(SAY_CALEN_INTRO);
+                DoCast(SPELL_FIERY_BARRIER);
+            }
+
             void IsSummonedBy(Unit* /*summoner*/)
             {
-                //me->MonsterYell(SAY_PHASE_2_CALEN, 0, 0);
+                //DoCast/
+                //me->MonsterYell(SAY_SINESTRA_PHASE_2_CALEN, 0, 0);
             }
         };
 
@@ -293,6 +329,6 @@ void AddSC_boss_sinestra()
 {
     new boss_sinestra();
     new creature_pulsing_twilight_egg();
-    new creature_twilight_orb();
+    new creature_shadow_orb();
     new creature_calen();
 }

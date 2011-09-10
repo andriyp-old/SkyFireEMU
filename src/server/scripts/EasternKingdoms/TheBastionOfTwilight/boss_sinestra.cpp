@@ -56,7 +56,7 @@ enum Spells
     SPELL_WRACK               = 89421, // alt: 89435, 92955, 92956
     SPELL_FLAME_BREATH        = 18435, // alt: 92944    
     SPELL_TWILIGHT_BLAST      = 89280,
-    SPELL_TWILIGHT_SPIT       = 89299, // alt: 92953
+    SPELL_TWILIGHT_SPIT       = 89299, // H25: 92953
     SPELL_TWILIGHT_ESSENCE    = 88146,
     SPELL_SHADOW_PULSE        = 78649,
     SPELL_MANA_BARRIER        = 87299,
@@ -74,6 +74,7 @@ enum Events
     EVENT_FLAME_BREATH,
     EVENT_TWILIGHT_BLAST,
     EVENT_TWILIGHT_ORBS,
+    EVENT_TWILIGHT_WHELPS,
     EVENT_TWILIGHT_SLICER,
     EVENT_TWILIGHT_EXTINCTION
 };
@@ -112,8 +113,8 @@ class creature_shadow_orb : public CreatureScript
                 switch (events.ExecuteEvent())
                 {
                 case EVENT_TWILIGHT_SLICER:
-                    if (mateOrb)
-                        DoCast(mateOrb, SPELL_TWILIGHT_SLICER);
+                    if (mateOrb)                        
+                        DoCast(mateOrb, SPELL_TWILIGHT_SLICER, true);
                     break;
                 }                
             }
@@ -164,10 +165,11 @@ class boss_sinestra : public CreatureScript
                 _EnterCombat();
                 Talk(SAY_SINESTRA_AGGRO);
                 DoCast(SPELL_CALL_FLAMES);
-                events.ScheduleEvent(EVENT_TWILIGHT_BLAST, 2000);
-                events.ScheduleEvent(EVENT_WRACK,          10000);
-                events.ScheduleEvent(EVENT_FLAME_BREATH,   20000);
-                events.ScheduleEvent(EVENT_TWILIGHT_ORBS,  30000);
+                events.ScheduleEvent(EVENT_TWILIGHT_BLAST,  2000);
+                events.ScheduleEvent(EVENT_WRACK,           10000);
+                events.ScheduleEvent(EVENT_FLAME_BREATH,    20000);
+                events.ScheduleEvent(EVENT_TWILIGHT_ORBS,   30000);
+                events.ScheduleEvent(EVENT_TWILIGHT_WHELPS, 45000);
             }
 
             void JustDied(Unit* /*Kill*/)
@@ -260,6 +262,15 @@ class boss_sinestra : public CreatureScript
                         }
 
                         events.RescheduleEvent(EVENT_TWILIGHT_ORBS, 30000);
+                        break;
+
+                    case EVENT_TWILIGHT_WHELPS:
+                        DoSummon(CREATURE_TWILIGHT_WHELP, RAND(POSITION_TWILIGHT_WHELP_1_A,    POSITION_TWILIGHT_WHELP_1_B));
+                        DoSummon(CREATURE_TWILIGHT_WHELP, RAND(POSITION_TWILIGHT_WHELP_2_A,    POSITION_TWILIGHT_WHELP_2_B));
+                        DoSummon(CREATURE_TWILIGHT_WHELP, RAND(POSITION_TWILIGHT_WHELP_3_A,    POSITION_TWILIGHT_WHELP_3_B));
+                        DoSummon(CREATURE_TWILIGHT_WHELP, RAND(POSITION_TWILIGHT_WHELP_4_A,    POSITION_TWILIGHT_WHELP_4_B));
+                        DoSummon(CREATURE_TWILIGHT_WHELP, RAND(POSITION_TWILIGHT_WHELP_5_LEFT, POSITION_TWILIGHT_WHELP_5_RIGHT));
+                        events.RescheduleEvent(EVENT_TWILIGHT_WHELPS, 45000);
                         break;
                     }        
                 }
